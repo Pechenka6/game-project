@@ -54,15 +54,42 @@ def add_new_tile(board):
     if empty_tiles:
         row, col = random.choice(empty_tiles)
         board[row][col] = 2 if random.random() < 0.9 else 4
-        
+
+def move_left(board):
+    new_board = [[0] * SIZE for _ in range(SIZE)]
+    for row in range(SIZE):
+        col_new = 0
+        last = 0
+        for col in range(SIZE):
+            if board[row][col] != 0:
+                if last == 0:
+                    last = board[row][col]
+                elif last == board[row][col]:
+                    new_board[row][col_new] = 2 * last
+                    col_new += 1
+                    last = 0
+                else:
+                    new_board[row][col_new] = last
+                    col_new += 1
+                    last = board[row][col]
+        if last != 0:
+            new_board[row][col_new] = last
+    return new_board
+
 def main():
     board = [[0] * SIZE for _ in range(SIZE)]
     running = True
+    add_new_tile(board)
+    add_new_tile(board)
     while running:
         draw_board(board)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key in (pygame.K_LEFT, pygame.K_a):
+                    board = move_left(board)
+                    add_new_tile(board)
             else:
                 continue
     pygame.quit()
