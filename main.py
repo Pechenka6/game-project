@@ -49,6 +49,12 @@ def draw_board(board):
                 screen.blit(text, text_rect)
     pygame.display.flip()
 
+def add_new_tile(board):
+    empty_tiles = [[row, col] for row in range(SIZE) for col in range(SIZE) if board[row][col] == 0]
+    if empty_tiles:
+        row, col = random.choice(empty_tiles)
+        board[row][col] = 2 if random.random() < 0.9 else 4
+        
 def main():
     board = [[0] * SIZE for _ in range(SIZE)]
     running = True
@@ -61,6 +67,5 @@ def main():
                 continue
     pygame.quit()
     sys.exit()
-
 if __name__ == "__main__":
     main()
