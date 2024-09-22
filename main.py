@@ -17,9 +17,30 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("2048")
 font = pygame.font.Font(None, 48)
 
+def draw_board(board):
+    screen.fill(GREY)
+    for row in range (SIZE):
+        for col in range(SIZE):
+            value = board[row][col]
+            color = BLACK
+            rect = pygame.Rect(
+                col * TILE_SIZE + (col + 1) * TILE_MARGIN,
+                row * TILE_SIZE + (row + 1) * TILE_MARGIN,
+                TILE_SIZE,
+                TILE_SIZE,
+            )
+            pygame.draw.rect(screen, color, rect)
+            if value:
+                text = font.render(str(value), True, BLACK if value <= 4 else WHITE)
+                text_rect = text.get_rect(center=rect.center)
+                screen.blit(text, text_rect)
+    pygame.display.flip()
+
 def main():
+    board = [[0] * SIZE for _ in range(SIZE)]
     running = True
     while running:
+        draw_board(board)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
