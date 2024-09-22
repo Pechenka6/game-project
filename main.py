@@ -4,9 +4,22 @@ import random
 
 pygame.init()
 
-WHITE = (255,255,255)
-BLACK = (0,0,0)
-GREY = (187,173,160)
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GREY = (187, 173, 160)
+COLORS = {
+    2 : (238, 228, 218),
+    4 : (237, 224, 200),
+    8 : (242, 177, 121),
+    16 : (245, 149, 99),
+    32 : (246, 124, 95),
+    64 : (246, 94, 59),
+    128 : (237, 207, 114),
+    256 : (237, 204, 97),
+    512 : (237, 200, 80),
+    1024 : (237, 197, 63),
+    2048 : (237, 194, 46)
+}
 
 SIZE = 4
 TILE_SIZE = 100
@@ -22,7 +35,7 @@ def draw_board(board):
     for row in range (SIZE):
         for col in range(SIZE):
             value = board[row][col]
-            color = BLACK
+            color = COLORS.get(value, BLACK)
             rect = pygame.Rect(
                 col * TILE_SIZE + (col + 1) * TILE_MARGIN,
                 row * TILE_SIZE + (row + 1) * TILE_MARGIN,
