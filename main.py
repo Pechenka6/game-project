@@ -1,15 +1,19 @@
 import pygame 
 import sys 
 import random
+import os
 
 pygame.init()
 
 pygame.mixer.init()
 
-pygame.mixer.music.load('background_music.mp3')  
+base_path = os.path.dirname(__file__)
+music_path = os.path.join(base_path, 'background_music.mp3')
+#sound_path = os.path.join(base_path, 'merge_sound.wav')
+pygame.mixer.music.load(music_path) 
 pygame.mixer.music.play(-1)  
 
-#merge_sound = pygame.mixer.Sound('merge_sound.wav')  
+#merge_sound = pygame.mixer.Sound(sound_path)  
 
 music_on = True
 sound_on = True
