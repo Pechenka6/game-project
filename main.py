@@ -4,6 +4,16 @@ import random
 
 pygame.init()
 
+pygame.mixer.init()
+
+pygame.mixer.music.load('background_music.mp3')  
+pygame.mixer.music.play(-1)  
+
+#merge_sound = pygame.mixer.Sound('merge_sound.wav')  
+
+music_on = True
+sound_on = True
+
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (187, 173, 160)
@@ -31,16 +41,16 @@ SIZE = 4
 TILE_SIZE = 100
 TILE_MARGIN = 10
 MAX_VALUE = 2048
-WIDTH = SIZE * TILE_SIZE + (SIZE + 1) * TILE_MARGIN
-HEIGHT = WIDTH
+WIDTH = 450
+HEIGHT = 450
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("2048")
 font = pygame.font.Font(None, 48)
 
 def draw_board(board):
     screen.fill(GREY)
-    for row in range (SIZE):
-        for col in range(SIZE):
+    for row in range (len(board)):
+        for col in range(len(board)):
             value = board[row][col]
             color = COLORS.get(value, BLACK)
             rect = pygame.Rect(
@@ -57,20 +67,20 @@ def draw_board(board):
     pygame.display.flip()
 
 def add_new_tile(board):
-    empty_tiles = [[row, col] for row in range(SIZE) for col in range(SIZE) if board[row][col] == 0]
+    empty_tiles = [[row, col] for row in range(len(board)) for col in range(len(board)) if board[row][col] == 0]
     if empty_tiles:
         row, col = random.choice(empty_tiles)
         board[row][col] = 2 if random.random() < 0.9 else 4
 
 def rotate_board(board):
-    return [[board[col][row] for col in range(SIZE)] for row in range(SIZE - 1, -1, -1)]
+    return [[board[col][row] for col in range(len(board))] for row in range(len(board) - 1, -1, -1)]
 
 def move_left(board):
-    new_board = [[0] * SIZE for _ in range(SIZE)]
-    for row in range(SIZE):
+    new_board = [[0] * len(board) for _ in range(len(board))]
+    for row in range(len(board)):
         col_new = 0
         last = 0
-        for col in range(SIZE):
+        for col in range(len(board)):
             if board[row][col] != 0:
                 if last == 0:
                     last = board[row][col]
@@ -86,16 +96,18 @@ def move_left(board):
             new_board[row][col_new] = last
     return new_board
 
-def game_over(board, size):
-    for row in range(SIZE):
-        for col in range(SIZE):
+def game_over(board, diffficulty):
+    if 2048 in board:
+         return True
+    for row in range(len(board)):
+        for col in range(len(board)):
             if board[row][col] == 0:
                 return False
-            if board[row][col] == 2048 * (2 ** (size - 1)) ** 4:
+            if board[row][col] == 2048 * (8 ** (diffficulty - 1)) ** 2:
                 return True
-            if col < SIZE - 1 and board[row][col] == board[row][col + 1]:
+            if col < len(board) - 1 and board[row][col] == board[row][col + 1]:
                 return False
-            if row < SIZE - 1 and board[row][col] == board[row + 1][col]:
+            if row < len(board) - 1 and board[row][col] == board[row + 1][col]:
                 return False
     return True
 
@@ -175,11 +187,14 @@ def difficulty_menu():
         pygame.display.flip()
 
 def settings_menu():
+    global music_on, sound_on
     while True:
         screen.fill(GREY)
         draw_text("Settings", font, WHITE, screen, WIDTH // 2, HEIGHT // 4)
 
-        draw_button("Back", 125, 150, 200, 50, LIGHT_GREY, WHITE)
+        draw_button(f"Music: {'On' if music_on else 'Off'}", 125, 150, 200, 50, LIGHT_GREY, WHITE)
+        draw_button(f"Sound: {'On' if sound_on else 'Off'}", 125, 220, 200, 50, LIGHT_GREY, WHITE)
+        draw_button("Back", 125, 290, 200, 50, LIGHT_GREY, WHITE)
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -187,9 +202,17 @@ def settings_menu():
                 sys.exit()
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if 100 <= event.pos[0] <= 300 and 150 <= event.pos[1] <= 200:
-                    return 
-
+                if 125 <= event.pos[0] <= 325:
+                    if 150 <= event.pos[1] <= 200:
+                        music_on = not music_on
+                        if music_on:
+                            pygame.mixer.music.play(-1)
+                        else:
+                            pygame.mixer.music.stop() 
+                    elif 220 <= event.pos[1] <= 270:
+                        sound_on = not sound_on
+                    elif 290 <= event.pos[1] <= 340:
+                        return 
         pygame.display.flip()
 
 def pause_menu():
@@ -227,9 +250,14 @@ def pause_menu():
 
 
 
-def start_game(size):
+def start_game(diffficulty):
+    size = int(SIZE * diffficulty)
+    global WIDTH, HEIGHT, screen
+    WIDTH = size * TILE_SIZE + (size + 1) * TILE_MARGIN
+    HEIGHT = WIDTH
+    screen = pygame.display.set_mode((WIDTH, HEIGHT))
     
-    board = [[0] * int(SIZE * size) for _ in range(int(SIZE * size))]
+    board = [[0] * size for _ in range(size)]
     running = True
     game_paused = False
     add_new_tile(board)
@@ -245,6 +273,10 @@ def start_game(size):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if game_over(board, diffficulty):
+                    display_game_over_message()
+                    running = False
+                    main_menu()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:  
                     game_paused = True
@@ -269,9 +301,6 @@ def start_game(size):
                     board = move_left(board)
                     board = rotate_board(board)
                 add_new_tile(board)
-                if game_over(board, size):
-                    display_game_over_message()
-                    running = False
         draw_board(board)
     pygame.quit()
     sys.exit()
